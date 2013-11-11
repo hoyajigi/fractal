@@ -1,9 +1,3 @@
-/*
- * OpenCL Boilerplate by Hyunseok Cho (i@hoyajigi.com)
- * First created at 2013.10.04
- * All Rights Reserved
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
