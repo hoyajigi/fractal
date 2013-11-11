@@ -29,9 +29,6 @@ void julia(int w, int h) {
   // determinate shape of the Julia Set
   double cRe, cIm;
 
-  // real and imaginary parts of new and old
-  double newRe, newIm, oldRe, oldIm;
-
   // you can change these to zoom and change position
   double zoom = 1, moveX = 0, moveY = 0;
 
@@ -61,8 +58,8 @@ void julia(int w, int h) {
   cl_mem           R,G,B;
   cl_int           err;
   cl_uint          num_dev = 0;
-  cl_event         ev_bp;
-  
+//  cl_event         ev_bp;
+  int i; 
   // TODO : 
 /*
     // loop through every pixel
@@ -98,7 +95,6 @@ void julia(int w, int h) {
 
   //Device
   for(i=0;i<num_platforms;i++) {
-    // FIXME : something wrong
     err = clGetDeviceIDs(platforms[i],dev_type,1,&dev,&num_dev);
     if(err != CL_DEVICE_NOT_FOUND) CHECK_ERROR(err);
     if(num_dev == 1) break;
@@ -107,41 +103,33 @@ void julia(int w, int h) {
     ERROR("No device");
   }
   
-  // Print the device name.
-  size_t name_size;
-  clGetDeviceInfo(dev, CL_DEVICE_NAME, 0, NULL, &name_size);
-  char *dev_name = (char *)malloc(name_size + 1);
-  err = clGetDeviceInfo(dev,CL_DEVICE_NAME,name_size,dev_name,NULL);
-  CHECK_ERROR(err);
-  printf("Device: %s\n",dev_name);
-  free(dev_name);
-
   // Context
   context = clCreateContext(NULL, 1, &dev, NULL, NULL, &err);
   CHECK_ERROR(err);
-
+printf("-4");
   // Command queue
   cmd_queue = clCreateCommandQueue(context, dev, 0, &err);
   CHECK_ERROR(err);
-
+printf("-3");
   // Create a program
   // TODO : Get source code in your favor
   char * source_code=get_source_code("julia.cl");
   
-  
-  size_t source_len=strlen(source_code);
-  program = clCreateProgramWithSource(context, 1, (const char **)&source_code, &source_len, &err);
+ printf("-2"); 
+  program = clCreateProgramWithSource(context, 1, (const char **)&source_code, NULL, &err);
   CHECK_ERROR(err);
 
   // Callback data for clBuildProgram
+  /*
   ev_bp=clCreateUserEvent(context,&err);
   CHECK_ERROR(err);
   bp_data_t bp_data;
   bp_data.dev=dev;
   bp_data.event=&ev_bp;
-
+  */
+printf("-1");
   // Build the program.
-  err = clBuildProgram(program, 1, &dev, NULL, build_program_callback, &bp_data);
+  err = clBuildProgram(program, 1, &dev, NULL, NULL, NULL);
   if (err != CL_SUCCESS) {
     // Print the build log.
     size_t log_size;
@@ -158,51 +146,59 @@ void julia(int w, int h) {
 
     CHECK_ERROR(err);
   }
-  
+  printf("0");
   // Buffers
   // TODO: make and buffers
   
   int (*r)[h] = (int (*)[h])calloc(w * h, sizeof(int));
   int (*g)[h] = (int (*)[h])calloc(w * h, sizeof(int));
   int (*b)[h] = (int (*)[h])calloc(w * h, sizeof(int));
-
+printf("1");
+return;
   clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-      sizeof(int) * w*h, A, &err);
+      sizeof(int) * w*h, R, &err);
   err=clEnqueueWriteBuffer(cmd_queue, R,CL_FALSE,0,w*h*sizeof(int),r,0,NULL,NULL);
   CHECK_ERROR(err);
   clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-      sizeof(int) * w*h, A, &err);
-  err=clEnqueueWriteBuffer(cmd_queue, R,CL_FALSE,0,w*h*sizeof(int),r,0,NULL,NULL);
+      sizeof(int) * w*h, G, &err);
+  err=clEnqueueWriteBuffer(cmd_queue, G,CL_FALSE,0,w*h*sizeof(int),g,0,NULL,NULL);
+  CHECK_ERROR(err);
+  clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
+		         sizeof(int) * w*h, B, &err);
+  err=clEnqueueWriteBuffer(cmd_queue, B,CL_FALSE,0,w*h*sizeof(int),b,0,NULL,NULL);
+  CHECK_ERROR(err);
+printf("2");
+  kernel=clCreateKernel(program,"julia",&err);
+  CHECK_ERROR(err);
+printf("3");
+  err=clSetKernelArg(kernel,0,sizeof(int),&w);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,1,sizeof(int),&h);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,2,sizeof(int),&cRe);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,3,sizeof(int),&cIm);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,4,sizeof(cl_mem),&R);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,5,sizeof(cl_mem),&G);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,6,sizeof(cl_mem),&B);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,7,sizeof(int),&zoom);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,8,sizeof(int),&moveX);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,9,sizeof(int),&moveY);
+  CHECK_ERROR(err);
+  err=clSetKernelArg(kernel,10,sizeof(int),&maxIterations);
   CHECK_ERROR(err);
 
-  err=clSetKernelArg(kernel,0,sizeof(int),w);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,1,sizeof(int),h);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,2,sizeof(int),cRe);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,3,sizeof(int),cIm);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,4,sizeof(cl_mem),R);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,5,sizeof(cl_mem),G);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,6,sizeof(cl_mem),B);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,7,sizeof(int),zoom);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,8,sizeof(int),moveX);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,9,sizeof(int),moveY);
-  CHECK_ERROR(err);
-  err=clSetKernelArg(kernel,10,sizeof(int),maxIterations);
-  CHECK_ERROR(err);
-
-  
+  printf("4");
 // Enqueue the kernel.
   err=clEnqueueNDRangeKernel(cmd_queue,kernel,1,NULL,gws,lws,0,NULL,NULL);
   CHECK_ERROR(err);
-
+printf("5");
   // Read the result.
   
   err = clEnqueueReadBuffer(cmd_queue,
@@ -259,7 +255,7 @@ timer_stop(0);
 
 
   // Release
-  clReleaseEvent(ev_bp);
+  //clReleaseEvent(ev_bp);
   clReleaseMemObject(R);
   clReleaseMemObject(G);
   clReleaseMemObject(B);

@@ -1,7 +1,7 @@
 CC = gcc
 LD = gcc
 CFLAGS  = -std=gnu99 -O2 -Wall -g
-LDFLAGS	=	-lm
+LDFLAGS	=	-lm -lOpenCL
 
 EXE = fractals
 CFILES	=	$(wildcard *.c)

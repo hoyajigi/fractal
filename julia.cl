@@ -49,7 +49,7 @@ RgbColor HSVtoRGB(unsigned h, unsigned s, unsigned v)
   return rgb;
 }
 
-__kernel julia(int w,int h,cRe,cIm,__global int *R,__global int *G,__global int *B,int zoom,int moveX,int moveY,int maxIterations)
+__kernel void julia(int w,int h,int cRe,int cIm,__global int *R,__global int *G,__global int *B,int zoom,int moveX,int moveY,int maxIterations)
 {
 	int x=get_global_id(0);
 	int y=get_global_id(1);
@@ -80,6 +80,6 @@ __kernel julia(int w,int h,cRe,cIm,__global int *R,__global int *G,__global int 
       // make brightness black if maxIterations reached
       RgbColor color = HSVtoRGB(i % 256, 255, 255 * (i < maxIterations));
       R[y*h+x] = color.r;
-      g[y*h+x] = color.g;
-      b[y*h+x] = color.b;	
+      G[y*h+x] = color.g;
+      B[y*h+x] = color.b;	
 }
