@@ -150,21 +150,23 @@ printf("-1");
   // Buffers
   // TODO: make and buffers
   
-  int (*r)[h] = (int (*)[h])calloc(w * h, sizeof(int));
-  int (*g)[h] = (int (*)[h])calloc(w * h, sizeof(int));
-  int (*b)[h] = (int (*)[h])calloc(w * h, sizeof(int));
+  int (*r) = (int (*))calloc(w * h, sizeof(int));
+  int (*g) = (int (*))calloc(w * h, sizeof(int));
+  int (*b) = (int (*))calloc(w * h, sizeof(int));
 printf("1");
-return;
-  clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-      sizeof(int) * w*h, R, &err);
+  R=clCreateBuffer(context, CL_MEM_READ_WRITE,
+      sizeof(int) * w*h, NULL, &err);
+  CHECK_ERROR(err);
   err=clEnqueueWriteBuffer(cmd_queue, R,CL_FALSE,0,w*h*sizeof(int),r,0,NULL,NULL);
   CHECK_ERROR(err);
-  clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-      sizeof(int) * w*h, G, &err);
+  G=clCreateBuffer(context, CL_MEM_READ_WRITE,
+      sizeof(int) * w*h, NULL, &err);
+  CHECK_ERROR(err);
   err=clEnqueueWriteBuffer(cmd_queue, G,CL_FALSE,0,w*h*sizeof(int),g,0,NULL,NULL);
   CHECK_ERROR(err);
-  clCreateBuffer(context, CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,
-		         sizeof(int) * w*h, B, &err);
+  B=clCreateBuffer(context, CL_MEM_READ_WRITE,
+		         sizeof(int) * w*h, NULL, &err);
+ CHECK_ERROR(err);
   err=clEnqueueWriteBuffer(cmd_queue, B,CL_FALSE,0,w*h*sizeof(int),b,0,NULL,NULL);
   CHECK_ERROR(err);
 printf("2");
@@ -243,7 +245,7 @@ timer_stop(0);
       int jhi = MIN( jlo + 4, w );
       for ( int j = jlo; j < jhi; j++ )
       {
-        fprintf( output_unit, "  %d  %d  %d", r[i][j], g[i][j], b[i][j] );
+        fprintf( output_unit, "  %d  %d  %d", r[i*w+j], g[i*w+j], b[i*w+j] );
       }
       fprintf( output_unit, "\n" );
     }

@@ -82,4 +82,7 @@ __kernel void julia(int w,int h,int cRe,int cIm,__global int *R,__global int *G,
       R[y*h+x] = color.r;
       G[y*h+x] = color.g;
       B[y*h+x] = color.b;	
+	  R[y*h+x]=255;
+	  G[y*h+x]=255;
+	  B[y*h+x]=255;
 }

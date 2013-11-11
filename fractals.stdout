@@ -15,3 +15,24 @@
   An ASCII PPM image of the set is created using
     M = 2048 pixels in the X direction and
     N = 2048 pixels in the Y direction.
+
+  Time = 20.109115 seconds.
+
+  Graphics data written to "mandelbrot.ppm".
+
+
+2. JULIA SET
+
+  Parallel OpenCL version
+
+  Create an ASCII PPM image of the Julia set.
+
+  An ASCII PPM image of the set is created using
+    W = 2048 pixels in the X direction and
+    H = 2048 pixels in the Y direction.
+Number of platforms: 1
+-4-3-2-1012345
+  Time = 0.971452 seconds.
+
+  Graphics data written to "julia.ppm".
+
